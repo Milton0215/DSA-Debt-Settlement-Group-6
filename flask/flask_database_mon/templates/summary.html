@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summary</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container">
+    <h2 class="mt-5">Expense Summary</h2>
+    <ul class="list-group mt-3">
+        {% for expense in expenses %}
+        <li class="list-group-item">
+            {{ expense.name }} spent ${{ expense.amount }} on {{ expense.description }}
+        </li>
+        {% endfor %}
+    </ul>
+    <h3 class="mt-3">Total spent: ${{ total }}</h3>
+    <h4>Each person should contribute: ${{ split_amount }}</h4>
+    <h4>Individual Balances</h4>
+    <ul>
+    {% for name, balance in balances.items() %}
+        <li>{{ name }}: {{ balance | round(2) }} €</li>
+    {% endfor %}
+    </ul>
+    <h4>Settlements</h4>
+    <ul>
+    {% for ower, ownee, amount, paypal_link in transactions_with_links %}
+        <li>
+            {{ ower }} owes {{ ownee }} €{{ '%.2f'|format(amount) }}
+            {% if paypal_link %}
+                <a href="{{ paypal_link }}" target="_blank" class="btn btn-primary">Pay with PayPal</a>
+            {% else %}
+                <span>No PayPal link available</span>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+<div class="chart-container" style="position: relative; height:40vh; width:80vw">
+    <canvas id="balanceChart"></canvas>
+    <script>
+        const balances = {{ balances | tojson | safe }};  // Your Flask view needs to pass 'balances' dictionary
+        const balanceData = Object.values(balances);
+        const balanceLabels = Object.keys(balances);
+        const backgroundColors = balanceData.map(value => value >= 0 ? 'rgba(75, 192, 192, 0.2)' : 'rgba(255, 99, 132, 0.2)');
+        const borderColors = balanceData.map(value => value >= 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)');
+
+        const ctx = document.getElementById('balanceChart').getContext('2d');
+        const balanceChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: balanceLabels,
+                datasets: [{
+                    label: 'Balance',
+                    data: balanceData,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            callback: function(value, index, values) {
+                                // Format the currency here if needed
+                                return value + ' €';
+                            }
+                        }
+                    }]
+                },
+                legend: {
+                    display: false  // Set true if you want it to be displayed
+                },
+                title: {
+                    display: true,
+                    text: 'User Balances'
+                }
+            }
+        });
+        </script>
+</div>
+    <a href="/enter_costs" class="btn btn-primary mt-3">New Expense</a>
+    <a href="/" class="btn btn-primary mt-3">Home</a>
+</div>
+</body>
+</html>
