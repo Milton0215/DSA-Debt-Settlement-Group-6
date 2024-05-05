@@ -1,6 +1,7 @@
 <!-- group_intermediate.html -->
 {% extends 'layout.html' %}
 
+{% block title %}Group Options{% endblock %}
 {% block content %}
 <h1 class="dashboard-title">Options for <span class="highlight">{{ group.name }}</span></h1>
 <body>
@@ -11,7 +12,7 @@
                     <div class="card-body">
                         <h5 class="card-title"><i class="fas fa-plus-circle"></i> Add Expense</h5>
                         <p class="card-text">Keep track of new expenses.</p>
-                        <a href="{{ url_for('add_expense', group_id=group_id) }}" class="btn btn-primary-yellow ">Add Expense</a>
+                        <a href="{{ url_for('add_expense', group_name=group_name) }}" class="btn btn-primary-yellow ">Add Expense</a>
                     </div>
                 </div>
             </div>
@@ -20,7 +21,7 @@
                     <div class="card-body">
                         <h5 class="card-title"><i class="fas fa-chart-pie"></i> View Summary</h5>
                         <p class="card-text">See your group's financial summary.</p>
-                        <a href="{{ url_for('group_dashboard', group_id=group_id) }}" class="btn btn-primary stretched-link">View Summary</a>
+                        <a href="{{ url_for('group_dashboard', group_name=group_name) }}" class="btn btn-primary stretched-link">View Summary</a>
                     </div>
                 </div>
             </div>

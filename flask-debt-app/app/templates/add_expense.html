@@ -1,3 +1,4 @@
+<!--add_expense.html-->
 {% extends 'layout.html' %}
 
 {% block title %}Add Expense{% endblock %}
@@ -8,7 +9,7 @@
         <div class="row justify-content-center">
             <div class="col-md-15 p-5 shadow rounded-lg bg-light">
                 <h2 class="text-center mb-4">Add an Expense</h2>
-                <form action="{{ url_for('add_expense', group_id=group.id) }}" method="post">
+                <form action="{{ url_for('add_expense', group_name=group.name) }}" method="post">
                     <div class="form-group">
                         <label for="payer_id" class="form-label">Who Paid?</label>
                         <select name="payer_id" id="payer_id" class="form-control" required>
@@ -37,7 +38,7 @@
                     </div>
                     <button type="submit" class="btn btn-primary-yellow  btn-inline-block center-button">Add Expense</button>
                 </form>
-                    <a href="{{ url_for('group_intermediate', group_name=group.name,group_id=group.id) }}" class="btn btn-secondary btn-inline-block center-button">Go Back to Groups</a>
+                    <a href="{{ url_for('group_intermediate', group_name=group.name) }}" class="btn btn-secondary btn-inline-block center-button">Go Back to Groups</a>
             </div>
         </div>
     </div>

@@ -54,6 +54,10 @@ def init_routes(app):
     @app.route('/dashboard')
     @login_required
     def dashboard():
+        """
+        Route to display the user dashboard including all groups the user is a member of,
+        option to create a new group and join an existing group.
+        """
         user_groups = current_user.groups  # Get all groups of the current user
         return render_template('dashboard.html', user_groups=user_groups)
 
@@ -119,22 +123,22 @@ def init_routes(app):
         group = Group.query.filter_by(name=group_name).first()
         if not group:
             abort(404)  # Group not found, return 404 error
-        return render_template('group_intermediate.html', group=group, group_id=group.id)
+        return render_template('group_intermediate.html', group=group, group_name=group.name)
 
-    @app.route('/add_expense/<int:group_id>', methods=['GET', 'POST'])
+    @app.route('/add_expense/<group_name>', methods=['GET', 'POST'])
     @login_required
-    def add_expense(group_id):
+    def add_expense(group_name):
         """
         Route to add an expense to a group.
 
         Args:
-            group_id (int): The ID of the group.
+            group_name (str): The name of the group.
 
         Returns:
             Redirect: Redirects to the group dashboard after adding the expense.
             Rendered Template: Renders the 'add_expense.html' template with group and participant information.
         """
-        group = Group.query.get(group_id)
+        group = Group.query.filter_by(name=group_name).first()
         if not group:
             flash("Group not found.", "error")
             return redirect(url_for('dashboard'))
@@ -153,12 +157,13 @@ def init_routes(app):
                     raise ValueError("The amount must be positive.")
             except ValueError as e:
                 flash(f"Invalid amount: {str(e)}", 'error')
-                return render_template('add_expense.html', group=group, participants=participants)
+                return render_template('add_expense.html', group=group, participants=participants,
+                                       group_name=group_name)
 
             # Get list of selected debtors
             selected_debtors = request.form.getlist('debtors')
 
-            new_expense = Expense(payer_id=payer_id, group_id=group_id, description=description, amount=amount)
+            new_expense = Expense(payer_id=payer_id, group_id=group_name, description=description, amount=amount)
             db.session.add(new_expense)
 
             # Add selected debtors to the expense
@@ -169,13 +174,17 @@ def init_routes(app):
             db.session.commit()
 
             flash('Expense added successfully!', 'success')
-            return redirect(url_for('group_dashboard', group_id=group.id))
+            return redirect(url_for('group_dashboard', group_name=group.name))
 
         return render_template('add_expense.html', group=group, participants=participants)
 
+    '''
     @app.route('/group_summary/<int:group_id>', methods=['GET'])
     @login_required
     def group_summary(group_id):
+        """
+        Route to display a summary of expenses for a group.
+        """
         group = Group.query.get(group_id)
         if not group:
             flash("Group not found.", "error")
@@ -185,13 +194,18 @@ def init_routes(app):
 
         return render_template('group_dashboard.html', group=group,
                                group_name=group_name, expenses=expenses, group_id=group_id)
+                               
+    '''
 
-    @app.route('/group_dashboard/<int:group_id>', methods=['GET'])
+    @app.route('/group_dashboard/<group_name>', methods=['GET'])
     @login_required
-    def group_dashboard(group_id):
-        group = Group.query.get_or_404(group_id)
+    def group_dashboard(group_name):
+        """
+        Route to display the dashboard/summary of all expenses for a group.
+        """
+        group = Group.query.filter_by(name=group_name).first_or_404()
 
-        expenses = Expense.query.filter_by(group_id=group_id).all()
+        expenses = Expense.query.filter_by(group_id=group.id).all()
 
         # Calculate the total spent
         total_spent = sum(expense.amount for expense in expenses)
@@ -225,17 +239,21 @@ def init_routes(app):
         nodes = [{'id': node_id, 'label': User.query.get(node_id).first_name} for node_id in nodes]
 
         return render_template('group_dashboard.html', group=group, total_spent=total_spent,
-                               past_expenses=past_expenses, nodes=nodes, edges=edges, group_id= group_id)
+                               past_expenses=past_expenses, nodes=nodes, edges=edges, group_name=group_name)
 
-    @app.route('/settle_debts/<int:group_id>', methods=['GET'])
+    @app.route('/settle_debts/<group_name>', methods=['GET'])
     @login_required
-    def settle_debts(group_id):
-        group = Group.query.get(group_id)
+    def settle_debts(group_name):
+        """
+        Route to display debts for a group and allow users to settle them.
+        Includes personalized messages for each transaction and PayPal button.
+        """
+        group = Group.query.filter_by(name=group_name).first()
         if not group:
             flash("Group not found.", "error")
             return redirect(url_for('dashboard'))
 
-        transactions = calculate_debts(group_id)
+        transactions = calculate_debts(group_name)
 
         # Enrich transactions with names and PayPal usernames
         for transaction in transactions:
@@ -255,7 +273,7 @@ def init_routes(app):
         # Important: Sort transactions to show current user's debts first
         sorted_transactions = sorted(transactions, key=lambda t: t['debtor'] == current_user.id, reverse=True)
 
-        return render_template('settle_debts.html', group=group, transactions=sorted_transactions)
+        return render_template('settle_debts.html', group=group, transactions=sorted_transactions, group_name=group_name)
 
     def create_personalized_message(transaction, debtor, creditor):
         """
@@ -274,9 +292,6 @@ def init_routes(app):
     def debt_graph(group_id):
         """
         Route to display a debt graph for a group.
-
-        :param group_id:
-        :return:
         """
         group = Group.query.get_or_404(group_id)
         nodes = set()
@@ -308,6 +323,10 @@ def init_routes(app):
     @app.route('/logout', methods=['POST'])
     @login_required
     def logout():
+        """
+        Route to logout the current user.
+        Automatically logs out users once app is closed.
+        """
         logout_user()
         return redirect(url_for('home'))  # Redirect to home after logout
 

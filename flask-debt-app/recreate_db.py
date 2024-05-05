@@ -1,5 +1,5 @@
 # script to recreate the database
-from app import create_app, db  # Make sure these imports are correct
+from app import create_app, db
 
 app = create_app()
 with app.app_context():

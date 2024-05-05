@@ -1,5 +1,7 @@
+<!--group_dasboard.html-->
 {% extends 'layout.html' %}
 
+{% block title %}Group Dashboard{% endblock %}
 {% block content %}
 <h1 class="dashboard-title">Group Dashboard for <span class="highlight">{{ group.name }}</span></h1>
 <div class="container mt-3">
@@ -95,7 +97,7 @@
         </div>
     </div>
     <div  class="button-container">
-        <a href="{{ url_for('settle_debts', group_id=group.id) }}" class="btn btn-primary center-button">Settle Debts</a>
+        <a href="{{ url_for('settle_debts', group_name=group.name) }}" class="btn btn-primary center-button">Settle Debts</a>
         <a href="{{ url_for('dashboard') }}" class="btn btn-secondary center-button">Back to My Groups</a>
     </div>
 </div>

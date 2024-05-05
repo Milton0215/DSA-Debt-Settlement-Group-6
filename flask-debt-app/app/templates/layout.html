@@ -91,6 +91,15 @@
         </div>
     </footer>
 
+    <!-- Log out user when they close the tab -->
+    <script>
+        window.addEventListener('beforeunload', function (event) {
+            // Send an AJAX request to the server to log out the user
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/logout', false); // Synchronous request to ensure it completes before page closes
+            xhr.send();
+        });
+    </script>
 
 </body>
 </html>

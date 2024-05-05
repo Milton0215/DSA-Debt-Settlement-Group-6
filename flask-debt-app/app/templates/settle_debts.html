@@ -1,3 +1,4 @@
+<!--settle_debts.html-->
 {% extends 'layout.html' %}
 
 {% block title %}Settle Debts{% endblock %}
@@ -27,7 +28,7 @@
     </div>
     {% endfor %}
     <div class="button-container">
-        <a href="{{ url_for('group_dashboard', group_id=group.id) }}" class="btn btn-secondary center-button">Back to Summary</a>
+        <a href="{{ url_for('group_dashboard', group_name=group.name) }}" class="btn btn-secondary center-button">Back to Summary</a>
     </div>
 </div>
 </body>

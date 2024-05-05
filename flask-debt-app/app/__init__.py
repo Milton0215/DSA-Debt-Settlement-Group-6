@@ -10,6 +10,12 @@ login_manager = LoginManager()
 login_manager.login_view = 'login'  # The route name for your login view
 
 def create_app():
+    """
+    Factory function to create the Flask application.
+
+    Returns:
+        Flask: The Flask application instance.
+    """
     app = Flask(__name__)
     app.config.from_object(Config)
     db.init_app(app)
@@ -23,5 +29,14 @@ def create_app():
 
 @login_manager.user_loader
 def load_user(user_id):
+    """
+    Callback function to reload the user object from the user ID stored in the session.
+
+    Args:
+        user_id (str): The user ID.
+
+    Returns:
+        UserMixin: The User object corresponding to the user ID.
+    """
     from app.models import User  # Move this import inside the user_loader function
     return User.query.get(int(user_id))
